@@ -6,9 +6,9 @@ from model import UNet
 import io
 
 
-# --------------------------------------------------
+# ============================================================
 # PAGE CONFIGURATION
-# --------------------------------------------------
+# ============================================================
 
 st.set_page_config(
     page_title="LumiEnhance AI",
@@ -18,46 +18,97 @@ st.set_page_config(
 )
 
 
-# --------------------------------------------------
+# ============================================================
 # CUSTOM CSS
-# --------------------------------------------------
+# ============================================================
 
 st.markdown(
     """
     <style>
 
-    .main-title {
-        text-align: center;
-        font-size: 42px;
-        font-weight: 700;
-        margin-bottom: 5px;
+    /* Main page */
+    .main {
+        padding-top: 1rem;
     }
 
-    .subtitle {
-        text-align: center;
-        font-size: 18px;
-        margin-bottom: 30px;
-    }
-
+    /* Logo */
     .logo-container {
         text-align: center;
         margin-top: 10px;
+        margin-bottom: 5px;
+    }
+
+    /* Main title */
+    .main-title {
+        text-align: center;
+        font-size: 46px;
+        font-weight: 800;
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+
+    /* Subtitle */
+    .subtitle {
+        text-align: center;
+        font-size: 19px;
+        margin-bottom: 30px;
+    }
+
+    /* Upload section */
+    .upload-title {
+        text-align: center;
+        font-size: 25px;
+        font-weight: 700;
         margin-bottom: 10px;
     }
 
-    .upload-box {
-        padding: 20px;
-        border-radius: 15px;
-        border: 2px dashed #888;
+    .upload-description {
         text-align: center;
-        margin-bottom: 25px;
+        font-size: 16px;
+        margin-bottom: 20px;
     }
 
+    /* Image section */
     .section-title {
         text-align: center;
         font-size: 24px;
-        font-weight: 600;
+        font-weight: 700;
+        margin-top: 10px;
+        margin-bottom: 15px;
+    }
+
+    /* Info cards */
+    .info-card {
+        padding: 18px;
+        border-radius: 14px;
+        border: 1px solid rgba(128,128,128,0.35);
+        text-align: center;
         margin-top: 15px;
+    }
+
+    .info-number {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .info-label {
+        font-size: 14px;
+    }
+
+    /* About section */
+    .about-box {
+        padding: 20px;
+        border-radius: 15px;
+        border: 1px solid rgba(128,128,128,0.35);
+        margin-top: 30px;
+        margin-bottom: 25px;
+    }
+
+    /* Footer */
+    .footer {
+        text-align: center;
+        font-size: 14px;
+        margin-top: 35px;
         margin-bottom: 15px;
     }
 
@@ -67,9 +118,9 @@ st.markdown(
 )
 
 
-# --------------------------------------------------
+# ============================================================
 # LOAD TRAINED U-NET MODEL
-# --------------------------------------------------
+# ============================================================
 
 @st.cache_resource
 def load_model():
@@ -91,9 +142,9 @@ def load_model():
 model = load_model()
 
 
-# --------------------------------------------------
+# ============================================================
 # IMAGE PREPROCESSING
-# --------------------------------------------------
+# ============================================================
 
 transform = transforms.Compose([
     transforms.Resize((256, 256)),
@@ -101,9 +152,9 @@ transform = transforms.Compose([
 ])
 
 
-# --------------------------------------------------
+# ============================================================
 # HEADER
-# --------------------------------------------------
+# ============================================================
 
 st.markdown(
     '<div class="logo-container">',
@@ -112,7 +163,7 @@ st.markdown(
 
 st.image(
     "logo.png",
-    width=220
+    width=180
 )
 
 st.markdown(
@@ -127,47 +178,92 @@ st.markdown(
 
 st.markdown(
     '<div class="subtitle">'
-    'Enhance dark images using Deep Learning and AI'
+    'Deep Learning powered low-light image enhancement'
     '</div>',
     unsafe_allow_html=True
 )
 
 
-# --------------------------------------------------
-# IMAGE UPLOAD
-# --------------------------------------------------
+# ============================================================
+# UPLOAD SECTION
+# ============================================================
 
 st.markdown(
-    '<div class="upload-box">',
+    '<div class="upload-title">📤 Upload Your Image</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    '<div class="upload-description">'
+    'Upload a dark or low-light image and let LumiEnhance AI improve its visibility.'
+    '</div>',
     unsafe_allow_html=True
 )
 
 uploaded_file = st.file_uploader(
-    "📤 Upload your low-light image",
+    "Choose an image",
     type=["jpg", "jpeg", "png"]
 )
 
-st.markdown(
-    '</div>',
-    unsafe_allow_html=True
-)
 
-
-# --------------------------------------------------
+# ============================================================
 # PROCESS IMAGE
-# --------------------------------------------------
+# ============================================================
 
 if uploaded_file is not None:
 
-    # Open image
     image = Image.open(uploaded_file).convert("RGB")
 
-    # Create two columns
-    col1, col2 = st.columns(2)
+    original_width, original_height = image.size
 
-    # ----------------------------------------------
+    st.markdown("---")
+
+    # --------------------------------------------------------
+    # IMAGE INFORMATION
+    # --------------------------------------------------------
+
+    info1, info2, info3 = st.columns(3)
+
+    with info1:
+        st.markdown(
+            f"""
+            <div class="info-card">
+                <div class="info-number">{original_width} × {original_height}</div>
+                <div class="info-label">Original Resolution</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with info2:
+        st.markdown(
+            """
+            <div class="info-card">
+                <div class="info-number">U-Net</div>
+                <div class="info-label">Deep Learning Model</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with info3:
+        st.markdown(
+            """
+            <div class="info-card">
+                <div class="info-number">256 × 256</div>
+                <div class="info-label">AI Processing Size</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    st.markdown("")
+
+    # --------------------------------------------------------
     # ORIGINAL IMAGE
-    # ----------------------------------------------
+    # --------------------------------------------------------
+
+    col1, col2 = st.columns(2)
 
     with col1:
 
@@ -181,18 +277,24 @@ if uploaded_file is not None:
             width="stretch"
         )
 
-    # ----------------------------------------------
+    # --------------------------------------------------------
     # ENHANCE BUTTON
-    # ----------------------------------------------
+    # --------------------------------------------------------
+
+    st.markdown("")
 
     enhance_button = st.button(
         "✨ Enhance Image",
         use_container_width=True
     )
 
+    # --------------------------------------------------------
+    # AI ENHANCEMENT
+    # --------------------------------------------------------
+
     if enhance_button:
 
-        with st.spinner("Enhancing image using AI..."):
+        with st.spinner("🧠 LumiEnhance AI is processing your image..."):
 
             # Convert image to tensor
             input_tensor = transform(image)
@@ -200,7 +302,7 @@ if uploaded_file is not None:
             # Add batch dimension
             input_tensor = input_tensor.unsqueeze(0)
 
-            # Run model
+            # Run trained U-Net model
             with torch.no_grad():
 
                 output = model(input_tensor)
@@ -208,29 +310,29 @@ if uploaded_file is not None:
             # Remove batch dimension
             output = output.squeeze(0)
 
-            # Convert tensor:
-            # (C, H, W) → (H, W, C)
-
+            # Convert tensor to image format
             output = output.permute(
-                1, 2, 0
+                1,
+                2,
+                0
             ).numpy()
 
-            # Convert to image
+            # Convert model output to image
             output_image = Image.fromarray(
                 (output * 255)
                 .clip(0, 255)
                 .astype("uint8")
             )
 
-            # Resize back to original size
+            # Restore original image resolution
             output_image = output_image.resize(
                 image.size,
                 Image.Resampling.BILINEAR
             )
 
-        # ------------------------------------------
+        # ----------------------------------------------------
         # ENHANCED IMAGE
-        # ------------------------------------------
+        # ----------------------------------------------------
 
         with col2:
 
@@ -244,9 +346,11 @@ if uploaded_file is not None:
                 width="stretch"
             )
 
-        # ------------------------------------------
+        # ----------------------------------------------------
         # DOWNLOAD
-        # ------------------------------------------
+        # ----------------------------------------------------
+
+        st.markdown("")
 
         buffer = io.BytesIO()
 
@@ -258,23 +362,51 @@ if uploaded_file is not None:
         st.download_button(
             label="⬇️ Download Enhanced Image",
             data=buffer.getvalue(),
-            file_name="enhanced_image.png",
+            file_name="lumienhance_result.png",
             mime="image/png",
             use_container_width=True
         )
 
 
-# --------------------------------------------------
-# FOOTER
-# --------------------------------------------------
-
-st.markdown("---")
+# ============================================================
+# ABOUT LUMIENHANCE AI
+# ============================================================
 
 st.markdown(
-    "<div style='text-align:center;'>"
-    "✨ LumiEnhance AI | "
-    "Deep Learning Low-Light Image Enhancement | "
-    "U-Net Model"
-    "</div>",
+    """
+    <div class="about-box">
+
+    <h3>🌙 About LumiEnhance AI</h3>
+
+    <p>
+    LumiEnhance AI is a deep learning based low-light image
+    enhancement application. It uses a trained U-Net neural
+    network to improve the visibility of images captured in
+    dark or low-light environments.
+    </p>
+
+    <p>
+    <b>How it works:</b>
+    Upload → AI Processing → Enhanced Image → Download
+    </p>
+
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+
+# ============================================================
+# FOOTER
+# ============================================================
+
+st.markdown(
+    """
+    <div class="footer">
+        ✨ LumiEnhance AI |
+        Deep Learning Low-Light Image Enhancement |
+        U-Net Model
+    </div>
+    """,
     unsafe_allow_html=True
 )
