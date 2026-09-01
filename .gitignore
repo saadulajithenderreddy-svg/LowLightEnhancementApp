@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+
+openrouter key.txt
+
+dataset/
+
+models/*.pth
