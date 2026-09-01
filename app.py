@@ -2,11 +2,75 @@ import streamlit as st
 import torch
 from PIL import Image
 from torchvision import transforms
-
 from model import UNet
+import io
 
 
-# Load trained U-Net model
+# --------------------------------------------------
+# PAGE CONFIGURATION
+# --------------------------------------------------
+
+st.set_page_config(
+    page_title="LumiEnhance AI",
+    page_icon="logo.png",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+
+# --------------------------------------------------
+# CUSTOM CSS
+# --------------------------------------------------
+
+st.markdown(
+    """
+    <style>
+
+    .main-title {
+        text-align: center;
+        font-size: 42px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .subtitle {
+        text-align: center;
+        font-size: 18px;
+        margin-bottom: 30px;
+    }
+
+    .logo-container {
+        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+
+    .upload-box {
+        padding: 20px;
+        border-radius: 15px;
+        border: 2px dashed #888;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 24px;
+        font-weight: 600;
+        margin-top: 15px;
+        margin-bottom: 15px;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+# --------------------------------------------------
+# LOAD TRAINED U-NET MODEL
+# --------------------------------------------------
+
 @st.cache_resource
 def load_model():
 
@@ -24,90 +88,193 @@ def load_model():
     return model
 
 
-# Load model
 model = load_model()
 
 
-# Image preprocessing
-# Model was trained using 256x256 images
+# --------------------------------------------------
+# IMAGE PREPROCESSING
+# --------------------------------------------------
+
 transform = transforms.Compose([
     transforms.Resize((256, 256)),
     transforms.ToTensor()
 ])
 
 
-# Streamlit page settings
-st.set_page_config(
-    page_title="Low-Light Enhancement",
-    page_icon="🌙"
+# --------------------------------------------------
+# HEADER
+# --------------------------------------------------
+
+st.markdown(
+    '<div class="logo-container">',
+    unsafe_allow_html=True
+)
+
+st.image(
+    "logo.png",
+    width=220
+)
+
+st.markdown(
+    '</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    '<div class="main-title">✨ LumiEnhance AI</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    '<div class="subtitle">'
+    'Enhance dark images using Deep Learning and AI'
+    '</div>',
+    unsafe_allow_html=True
 )
 
 
-# App title
-st.title("🌙 Deep Learning Low-Light Image Enhancement")
+# --------------------------------------------------
+# IMAGE UPLOAD
+# --------------------------------------------------
 
-st.write(
-    "Upload a low-light image and enhance it using a trained U-Net model."
+st.markdown(
+    '<div class="upload-box">',
+    unsafe_allow_html=True
 )
 
-
-# Upload image
 uploaded_file = st.file_uploader(
-    "Upload a low-light image",
+    "📤 Upload your low-light image",
     type=["jpg", "jpeg", "png"]
 )
 
+st.markdown(
+    '</div>',
+    unsafe_allow_html=True
+)
+
+
+# --------------------------------------------------
+# PROCESS IMAGE
+# --------------------------------------------------
 
 if uploaded_file is not None:
 
-    # Open uploaded image
-    image = Image.open(
-        uploaded_file
-    ).convert("RGB")
+    # Open image
+    image = Image.open(uploaded_file).convert("RGB")
 
-    # Show original image
-    st.subheader("Original Image")
+    # Create two columns
+    col1, col2 = st.columns(2)
 
-    st.image(
-        image,
-        width="stretch"
+    # ----------------------------------------------
+    # ORIGINAL IMAGE
+    # ----------------------------------------------
+
+    with col1:
+
+        st.markdown(
+            '<div class="section-title">📷 Original Image</div>',
+            unsafe_allow_html=True
+        )
+
+        st.image(
+            image,
+            width="stretch"
+        )
+
+    # ----------------------------------------------
+    # ENHANCE BUTTON
+    # ----------------------------------------------
+
+    enhance_button = st.button(
+        "✨ Enhance Image",
+        use_container_width=True
     )
 
-    # Convert image to tensor
-    input_tensor = transform(image)
+    if enhance_button:
 
-    # Add batch dimension
-    input_tensor = input_tensor.unsqueeze(0)
+        with st.spinner("Enhancing image using AI..."):
 
-    # Run the U-Net model
-    with torch.no_grad():
-        output = model(input_tensor)
+            # Convert image to tensor
+            input_tensor = transform(image)
 
-    # Remove batch dimension
-    output = output.squeeze(0)
+            # Add batch dimension
+            input_tensor = input_tensor.unsqueeze(0)
 
-    # Change tensor format from (C, H, W) to (H, W, C)
-    output = output.permute(
-        1, 2, 0
-    ).numpy()
+            # Run model
+            with torch.no_grad():
 
-    # Convert model output to an image
-    output_image = Image.fromarray(
-        (output * 255)
-        .clip(0, 255)
-        .astype("uint8")
-    )
+                output = model(input_tensor)
 
-    # Resize enhanced image back to original image size
-    output_image = output_image.resize(
-        image.size,
-        Image.Resampling.BILINEAR
-    )
+            # Remove batch dimension
+            output = output.squeeze(0)
 
-    # Show enhanced image
-    st.subheader("Enhanced Image")
+            # Convert tensor:
+            # (C, H, W) → (H, W, C)
 
-    st.image(
-        output_image,
-        width="stretch"
-    )
+            output = output.permute(
+                1, 2, 0
+            ).numpy()
+
+            # Convert to image
+            output_image = Image.fromarray(
+                (output * 255)
+                .clip(0, 255)
+                .astype("uint8")
+            )
+
+            # Resize back to original size
+            output_image = output_image.resize(
+                image.size,
+                Image.Resampling.BILINEAR
+            )
+
+        # ------------------------------------------
+        # ENHANCED IMAGE
+        # ------------------------------------------
+
+        with col2:
+
+            st.markdown(
+                '<div class="section-title">✨ Enhanced Image</div>',
+                unsafe_allow_html=True
+            )
+
+            st.image(
+                output_image,
+                width="stretch"
+            )
+
+        # ------------------------------------------
+        # DOWNLOAD
+        # ------------------------------------------
+
+        buffer = io.BytesIO()
+
+        output_image.save(
+            buffer,
+            format="PNG"
+        )
+
+        st.download_button(
+            label="⬇️ Download Enhanced Image",
+            data=buffer.getvalue(),
+            file_name="enhanced_image.png",
+            mime="image/png",
+            use_container_width=True
+        )
+
+
+# --------------------------------------------------
+# FOOTER
+# --------------------------------------------------
+
+st.markdown("---")
+
+st.markdown(
+    "<div style='text-align:center;'>"
+    "✨ LumiEnhance AI | "
+    "Deep Learning Low-Light Image Enhancement | "
+    "U-Net Model"
+    "</div>",
+    unsafe_allow_html=True
+)
