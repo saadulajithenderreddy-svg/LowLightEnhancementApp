@@ -6,3 +6,5 @@ openrouter key.txt
 dataset/
 
 models/*.pth
+
+app_backup_working.py
