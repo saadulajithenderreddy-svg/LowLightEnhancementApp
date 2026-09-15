@@ -1,10 +1,21 @@
 __pycache__/
 *.pyc
 
+# Secrets
 openrouter key.txt
 
+# Dataset and trained models
 dataset/
-
 models/*.pth
 
+# Backup
 app_backup_working.py
+
+# Desktop application build files
+build/
+dist/
+.vscode/
+*.spec
+
+# Windows application
+LumiEnhance AI FINAL/
